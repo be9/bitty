@@ -1,0 +1,7 @@
+= bitty
+
+Description goes here.
+
+== Copyright
+
+Copyright (c) 2009 oleg dashevskii. See LICENSE for details.

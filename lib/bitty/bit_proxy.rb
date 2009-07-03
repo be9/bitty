@@ -1,5 +1,5 @@
 module Bitty
-  # This class acts like a proxy. It presents you with all these 
+  # This class acts like a proxy. It presents you with all these
   # bitfield methods, but it doesn't store the value itself.
   class BitProxy
     # this will be redefined in self.column=
@@ -24,7 +24,20 @@ module Bitty
           end
         end
 
-        # TODO: add getters and setters
+        @power2.each do |name, bitmask|
+          inv = ~bitmask
+          class_eval <<-RUBY
+            def #{name}
+              (value & #{bitmask}) != 0
+            end
+
+            alias #{name}? #{name}
+
+            def #{name}=(val)
+              self.value = true?(val) ? (value | #{bitmask}) : (value & #{inv})
+            end
+          RUBY
+        end
       end
 
       def column=(column)
@@ -66,11 +79,7 @@ module Bitty
       bitmask = power2(key)
       raise ArgumentError, "unknown bitname: #{key}" unless bitmask
 
-      if true?(val)
-        self.value = value | bitmask
-      else
-        self.value = value & ~bitmask
-      end
+      self.value = true?(val) ? (value | bitmask) : (value & ~bitmask)
     end
 
     def set!(value)

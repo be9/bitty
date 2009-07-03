@@ -111,4 +111,48 @@ class BittyProxyTest < Test::Unit::TestCase
       end
     end
   end
+
+  describe "named access" do
+    it "should allow to query bits directly" do
+      @foo.uno.should == false
+      @foo.dos.should == true
+      @foo.tres.should == false
+      @foo.quatro.should == true
+    end
+
+    it "should allow to query bits with question mark methods" do
+      @foo.uno?.should == false
+      @foo.dos?.should == true
+      @foo.tres?.should == false
+      @foo.quatro?.should == true
+    end
+
+    it "should allow to set bits directly" do
+      @mobject.value = 0b1010
+      @foo.uno = true
+      @mobject.value.should == 0b1011
+
+      @mobject.value = 0b1010
+      @foo.dos = 1
+      @mobject.value.should == 0b1010
+
+      @mobject.value = 0b1010
+      @foo.tres = 'YES'
+      @mobject.value.should == 0b1110
+    end
+
+    it "should allow to reset bits directly" do
+      @mobject.value = 0b1010
+      @foo.uno = false
+      @mobject.value.should == 0b1010
+
+      @mobject.value = 0b1010
+      @foo.dos = 'N'
+      @mobject.value.should == 0b1000
+
+      @mobject.value = 0b1010
+      @foo.quatro = 0
+      @mobject.value.should == 0b0010
+    end
+  end
 end

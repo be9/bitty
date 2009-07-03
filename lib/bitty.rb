@@ -11,16 +11,19 @@ module Bitty
       proxy.bit_names = args
       proxy.column = opts[:column] || field
 
+      # TODO: opts[:default]
+      # TODO: opts[:named_scope]
+      # TODO: check if field has already been defined in superclass
       write_inheritable_hash(:_bitty_fields, { field => proxy } )
 
       class_eval <<-RUBY
         def #{field}
-          @_bitty_#{field} ||= 
-            self.class.read_inheritable_attribute(:_bitty_fields)[:#{field}].new
+          @_bitty_#{field} ||=
+            self.class.read_inheritable_attribute(:_bitty_fields)[:#{field}].new(self)
         end
 
-        def #{field}=(something)
-          #{field}.set(something)
+        def #{field}=(value)
+          #{field}.set!(value)
         end
       RUBY
     end

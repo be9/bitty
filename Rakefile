@@ -9,6 +9,7 @@ begin
     gem.email = "be9@be9.ru"
     gem.homepage = "http://github.com/be9/bitty"
     gem.authors = ["oleg dashevskii"]
+    gem.files.exclude '.gitignore', '.document'
     # gem is a Gem::Specification... see http://www.rubygems.org/read/chapter/20 for additional settings
   end
 
@@ -36,7 +37,6 @@ rescue LoadError
   end
 end
 
-
 task :default => :test
 
 require 'rake/rdoctask'
@@ -53,4 +53,3 @@ Rake::RDocTask.new do |rdoc|
   rdoc.rdoc_files.include('README*')
   rdoc.rdoc_files.include('lib/**/*.rb')
 end
-

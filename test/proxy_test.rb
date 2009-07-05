@@ -155,4 +155,42 @@ class BittyProxyTest < Test::Unit::TestCase
       @mobject.value.should == 0b0010
     end
   end
+
+  describe "#named_scope" do
+    it "should generate valid condition for 0 bits" do
+      ns(:uno => 0).should == cond("(value & 1 = 0)")
+      ns(:uno => 0, :quatro => 0).should == cond("(value & 9 = 0)")
+    end
+
+    it "should generate valid condition for 1 bits" do
+      ns(:uno => 1).should == cond("(value & 1 = 1)")
+      ns(:uno => 1, :quatro => 1).should == cond("(value & 9 = 9)")
+    end
+
+    it "should generate valid condition for 1 bits given as array" do
+      ns(:uno).should == cond("(value & 1 = 1)")
+      ns(:uno, :quatro).should == cond("(value & 9 = 9)")
+    end
+
+    it "should generate valid condition for mixed bit values" do
+      ns(:uno => 1, :dos => 0, :tres => 1, :quatro => 0).should == 
+        cond("(value & 10 = 0) AND (value & 5 = 5)")
+      ns(:uno, :tres, :dos => 0, :quatro => 0).should == 
+        cond("(value & 10 = 0) AND (value & 5 = 5)")
+    end
+
+    it "should raise ArgumentError given invalid bitnames" do
+      lambda { ns(:bzz) }.should raise_error(ArgumentError)
+      lambda { ns(:bzz => 0) }.should raise_error(ArgumentError)
+      lambda { ns(:foo, :bzz => 0) }.should raise_error(ArgumentError)
+    end
+
+    def ns(*args)
+      @proxy_class.named_scope(*args)
+    end
+
+    def cond(str)
+      { :conditions => str }
+    end
+  end
 end

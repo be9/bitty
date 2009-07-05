@@ -27,6 +27,16 @@ module Bitty
         end
       RUBY
     end
+
+    def bitty_named_scope(name, bitty_field, *args)
+      proxy_class = read_inheritable_attribute(:_bitty_fields)[bitty_field]
+
+      if proxy_class
+        named_scope name, proxy_class.named_scope(*args)
+      else
+        raise ArgumentError, "There's no bitfield '#{bitty_field}' defined!"
+      end
+    end
   end
 end
 

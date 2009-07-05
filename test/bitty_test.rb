@@ -43,3 +43,49 @@ class BittyTest < Test::Unit::TestCase
     end
   end
 end
+
+class FooWithScope < Foo
+  bitty_named_scope :with_uno, :bitval, :uno
+  bitty_named_scope :without_4, :bitval, :quatro => 0
+  bitty_named_scope :with_110_, :bitval, :quatro => 1, :tres => 1, :dos => 0
+end
+
+class BittyNamedScopeTest < Test::Unit::TestCase
+  before :all do
+    @foos = (0..15).to_a.map do |v|
+      FooWithScope.create!(:bitval => v)
+    end
+  end
+
+  it ".with_uno should find values with :uno set" do
+    FooWithScope.with_uno.all.should == fs(1,3,5,7,9,11,13,15)
+  end
+
+  it ".with_4 should find values with :quatro unset" do
+    FooWithScope.without_4.all.should == fs(*(0..7).to_a)
+  end
+
+  it ".with_110_ should find by bit prefix 110" do
+    FooWithScope.with_110_.all.should == fs(12,13)
+  end
+
+  it "raises ArgumentError given invalid bitfield" do
+    lambda do
+      FooWithScope.class_eval do
+        bitty_named_scope :test_1, :nonexistent, :foo
+      end
+    end.should raise_error(ArgumentError)
+  end
+
+  it "raises ArgumentError given invalid bitname" do
+    lambda do
+      FooWithScope.class_eval do
+        bitty_named_scope :test_2, :bitval, :foo
+      end
+    end.should raise_error(ArgumentError)
+  end
+
+  def fs(*args)
+    args.map { |i| @foos[i] }
+  end
+end

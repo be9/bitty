@@ -1,13 +1,24 @@
 module Bitty
   # This class acts like a proxy. It presents you with all these
   # bitfield methods, but it doesn't store the value itself.
+  def true?(val)
+    case val
+    when true, 1, /1|y|yes/i then true
+    else false
+    end
+  end
+
+  module_function :true?
+
   class BitProxy
     # this will be redefined in self.column=
     def initialize(*args)
     end
 
     class <<self
-      attr_reader :power2
+      def power2(name)
+        @power2[name.to_sym]
+      end
 
       def bit_names=(names)
         @power2 = {}
@@ -34,13 +45,17 @@ module Bitty
             alias #{name}? #{name}
 
             def #{name}=(val)
-              self.value = true?(val) ? (value | #{bitmask}) : (value & #{inv})
+              self.value = Bitty.true?(val) ? (value | #{bitmask}) : (value & #{inv})
             end
           RUBY
         end
       end
 
+      attr_reader :column
+
       def column=(column)
+        @column = column
+
         class_eval <<-RUBY
           attr_accessor :model_object
 
@@ -61,7 +76,29 @@ module Bitty
       end
 
       def named_scope(*args)
-        # TODO: named_scope
+        bits = args.extract_options!
+        args.each { |arg| bits[arg] = true }
+
+        masks = [0, 0]
+
+        bits.each do |name, val|
+          mask = power2(name)
+          raise ArgumentError, "invalid bit name #{name}" unless mask
+
+          masks[Bitty.true?(val) ? 1 : 0] |= mask
+        end
+
+        cond = [nil, nil]
+
+        if masks[0] != 0
+          cond[0] = "#{column} & #{masks[0]} = 0"
+        end
+
+        if masks[1] != 0
+          cond[1] = "#{column} & #{masks[1]} = #{masks[1]}"
+        end
+
+        { :conditions => cond.compact.map { |c| "(#{c})" } * ' AND ' }
       end
     end
 
@@ -79,7 +116,7 @@ module Bitty
       bitmask = power2(key)
       raise ArgumentError, "unknown bitname: #{key}" unless bitmask
 
-      self.value = true?(val) ? (value | bitmask) : (value & ~bitmask)
+      self.value = Bitty.true?(val) ? (value | bitmask) : (value & ~bitmask)
     end
 
     def set!(value)
@@ -109,14 +146,7 @@ module Bitty
 
     # power of 2, corresponding to key
     def power2(key)
-      self.class.power2[key.to_sym]
-    end
-
-    def true?(val)
-      case val
-      when true, 1, /1|y|yes/i then true
-      else false
-      end
+      self.class.power2(key)
     end
   end
 end

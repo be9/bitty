@@ -6,7 +6,7 @@ begin
   Jeweler::Tasks.new do |gem|
     gem.name = "bitty"
     gem.summary = %Q{ActiveRecord plugin for rich bitfields}
-    gem.email = "be9@be9.ru"
+    gem.email = "olegdashevskii@gmail.com"
     gem.homepage = "http://github.com/be9/bitty"
     gem.authors = ["oleg dashevskii"]
     gem.files.exclude '.gitignore', '.document'
@@ -53,3 +53,5 @@ Rake::RDocTask.new do |rdoc|
   rdoc.rdoc_files.include('README*')
   rdoc.rdoc_files.include('lib/**/*.rb')
 end
+
+Jeweler::GemcutterTasks.new
